@@ -1,0 +1,24 @@
+{
+  "name": "mysql-to-excel-exporter",
+  "version": "1.0.0",
+  "description": "从MySQL数据库读取资产数据并生成Excel文件",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "blue-system": "node hierarchicalExport.js",
+    "red-system": "node redSystemExport.js",
+    "comparison": "node assetComparison.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["mysql", "excel", "export", "database"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "mysql2": "^3.6.5",
+    "xlsx": "^0.18.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
