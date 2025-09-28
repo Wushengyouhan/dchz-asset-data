@@ -86,13 +86,15 @@ class ExcelGenerator {
 
       // 准备数据，添加表头样式
       const headers = [
-        '资产编码', '资产名称', '资产等级', '资产类型', '资产分类',
-        '资产地址', '建筑面积', '租赁面积', '上级资产编码', '下级资产编码列表'
+        '资产编码', '合同编号', '资产名称', '资产等级', '资产类型', '资产分类',
+        '资产地址', '建筑面积', '租赁面积', '上级资产编码', '下级资产编码列表',
+        'NEW_AS_CODE', 'NEW_AS_NAME', 'OLD_AS_CODE', 'OLD_AS_NAME'
       ];
 
       // 将数据转换为二维数组格式
       const worksheetData = [headers, ...data.map(row => [
         row['资产编码'],
+        row['合同编号'] || '',
         row['资产名称'],
         row['资产等级'],
         row['资产类型'],
@@ -101,7 +103,11 @@ class ExcelGenerator {
         row['建筑面积'],
         row['租赁面积'],
         row['上级资产编码'],
-        row['下级资产编码列表']
+        row['下级资产编码列表'],
+        row['NEW_AS_CODE'] || '',
+        row['NEW_AS_NAME'] || '',
+        row['OLD_AS_CODE'] || '',
+        row['OLD_AS_NAME'] || ''
       ])];
 
       // 创建工作表
@@ -110,6 +116,7 @@ class ExcelGenerator {
       // 设置列宽
       const columnWidths = [
         { wch: 20 }, // 资产编码
+        { wch: 20 }, // 合同编号
         { wch: 25 }, // 资产名称
         { wch: 10 }, // 资产等级
         { wch: 15 }, // 资产类型
@@ -118,7 +125,11 @@ class ExcelGenerator {
         { wch: 12 }, // 建筑面积
         { wch: 12 }, // 租赁面积
         { wch: 20 }, // 上级资产编码
-        { wch: 40 }  // 下级资产编码列表
+        { wch: 40 }, // 下级资产编码列表
+        { wch: 20 }, // NEW_AS_CODE
+        { wch: 25 }, // NEW_AS_NAME
+        { wch: 20 }, // OLD_AS_CODE
+        { wch: 25 }  // OLD_AS_NAME
       ];
       worksheet['!cols'] = columnWidths;
 
@@ -170,7 +181,7 @@ class ExcelGenerator {
 
       // 准备数据，添加表头样式（包含红色系统特有字段）
       const headers = [
-        '资产编码', '资产名称', '资产等级', '资产类型', '资产分类',
+        '资产编码', '合同编号', '资产名称', '资产等级', '资产类型', '资产分类',
         '资产地址', '建筑面积', '租赁面积', '上级资产编码', '下级资产编码列表',
         'NEW_AS_CODE', 'NEW_AS_NAME', 'OLD_AS_CODE', 'OLD_AS_NAME'
       ];
@@ -178,6 +189,7 @@ class ExcelGenerator {
       // 将数据转换为二维数组格式
       const worksheetData = [headers, ...data.map(row => [
         row['资产编码'],
+        row['合同编号'] || '',
         row['资产名称'],
         row['资产等级'],
         row['资产类型'],
@@ -199,6 +211,7 @@ class ExcelGenerator {
       // 设置列宽
       const columnWidths = [
         { wch: 20 }, // 资产编码
+        { wch: 20 }, // 合同编号
         { wch: 25 }, // 资产名称
         { wch: 10 }, // 资产等级
         { wch: 15 }, // 资产类型
@@ -232,7 +245,7 @@ class ExcelGenerator {
       // 生成文件路径
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
       const managementAreaName = this.config.managementArea.name;
-      const filename = `红色系统_${managementAreaName}_资产数据_${timestamp}.xlsx`;
+      const filename = `红色系统_${managementAreaName}_层级资产数据_${timestamp}.xlsx`;
       const filePath = path.join(this.config.excel.outputDir, filename);
 
       // 写入文件
@@ -247,6 +260,7 @@ class ExcelGenerator {
       throw error;
     }
   }
+
 
   /**
    * 生成带样式的Excel文件（高级版本）

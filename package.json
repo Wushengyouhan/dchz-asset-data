@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "blue-system": "node hierarchicalExport.js",
-    "red-system": "node redSystemExport.js",
+    "blue-all": "node hierarchicalExport.js",
+    "red-all": "node redSystemExport.js",
     "comparison": "node assetComparison.js",
-    "all": "npm run blue-system && npm run red-system && npm run comparison",
+    "all": "npm run blue-all && npm run red-all && npm run comparison",
     "dev": "node --watch index.js"
   },
   "keywords": ["mysql", "excel", "export", "database"],

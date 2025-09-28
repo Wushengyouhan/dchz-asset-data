@@ -37,7 +37,7 @@ class RedSystemAssetExporter {
         OPERATING_NAME = ? 
         AND U_DELETE = 1 
         AND AS_LV = -99
-        AND AS_STATE = 'CHECKED'
+        AND AS_STATE IN ('CHECKED', 'INIT')
       ORDER BY
         AS_CODE
     `;
@@ -74,7 +74,7 @@ class RedSystemAssetExporter {
       WHERE
         OPERATING_NAME = ? 
         AND U_DELETE = 1 
-        AND AS_STATE = 'CHECKED'
+        AND AS_STATE IN ('CHECKED', 'INIT')
         AND UP_AS_CODE = ?
       ORDER BY
         AS_CODE

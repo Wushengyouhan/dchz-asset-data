@@ -46,25 +46,41 @@ async function generateAssetComparison() {
       // 自动查找最新文件
       console.log('🔍 自动查找最新的Excel文件...');
       
-      // 查找蓝色系统文件（资产管理系统）
-      const blueSystemFiles = fs.readdirSync(outputDir)
-        .filter(file => file.startsWith('蓝色系统_') && file.includes(managementAreaName) && file.includes('资产数据_'))
-        .map(file => ({
-          name: file,
-          path: path.join(outputDir, file),
-          time: fs.statSync(path.join(outputDir, file)).mtime
-        }))
-        .sort((a, b) => b.time - a.time);
+      // 递归查找蓝色系统文件（资产管理系统）
+      const blueSystemFiles = [];
+      const redSystemFiles = [];
       
-      // 查找红色系统文件
-      const redSystemFiles = fs.readdirSync(outputDir)
-        .filter(file => file.startsWith('红色系统_') && file.includes(managementAreaName) && file.includes('资产数据_'))
-        .map(file => ({
-          name: file,
-          path: path.join(outputDir, file),
-          time: fs.statSync(path.join(outputDir, file)).mtime
-        }))
-        .sort((a, b) => b.time - a.time);
+      function findFilesRecursively(dir) {
+        const items = fs.readdirSync(dir);
+        for (const item of items) {
+          const fullPath = path.join(dir, item);
+          const stat = fs.statSync(fullPath);
+          
+          if (stat.isDirectory()) {
+            findFilesRecursively(fullPath);
+          } else if (stat.isFile()) {
+            if (item.startsWith('蓝色系统_') && item.includes(managementAreaName) && item.includes('资产数据_')) {
+              blueSystemFiles.push({
+                name: item,
+                path: fullPath,
+                time: stat.mtime
+              });
+            } else if (item.startsWith('红色系统_') && item.includes(managementAreaName) && item.includes('资产数据_')) {
+              redSystemFiles.push({
+                name: item,
+                path: fullPath,
+                time: stat.mtime
+              });
+            }
+          }
+        }
+      }
+      
+      findFilesRecursively(outputDir);
+      
+      // 按时间排序
+      blueSystemFiles.sort((a, b) => b.time - a.time);
+      redSystemFiles.sort((a, b) => b.time - a.time);
       
       if (blueSystemFiles.length === 0) {
         throw new Error(`未找到蓝色系统文件，请先运行: npm run hierarchical`);
@@ -86,39 +102,26 @@ async function generateAssetComparison() {
     const blueAssets = generator.readExcelFile(blueFile.path);
     const redAssets = generator.readExcelFile(redFile.path);
     
-    // 生成两个对照表数据
+    // 生成对照表数据
     console.log('📊 正在生成对照表数据...');
-    const blueSystemComparisonData = generator.generateBlueSystemComparisonData(blueAssets, redAssets);
-    const redSystemComparisonData = generator.generateRedSystemComparisonData(blueAssets, redAssets);
+    const comparisonData = generator.generateBlueSystemComparisonData(blueAssets, redAssets);
     
-    // 生成蓝色系统对照表Excel文件
-    console.log('📊 正在生成蓝色系统对照表Excel文件...');
-    const blueSystemFilePath = generator.generateComparisonExcel(blueSystemComparisonData, '蓝色系统对照表');
-    
-    // 生成红色系统对照表Excel文件
-    console.log('📊 正在生成红色系统对照表Excel文件...');
-    const redSystemFilePath = generator.generateComparisonExcel(redSystemComparisonData, '红色系统对照表');
+    // 生成对照表Excel文件
+    console.log('📊 正在生成对照表Excel文件...');
+    const filePath = generator.generateComparisonExcel(comparisonData, '资产对照表');
     
     // 显示统计信息
-    const blueMatchedCount = blueSystemComparisonData.filter(item => item['匹配状态'] === '已匹配').length;
-    const blueUnmatchedCount = blueSystemComparisonData.filter(item => item['匹配状态'] === '未匹配').length;
-    const redMatchedCount = redSystemComparisonData.filter(item => item['匹配状态'] === '已匹配').length;
-    const redUnmatchedCount = redSystemComparisonData.filter(item => item['匹配状态'] === '未匹配').length;
+    const matchedCount = comparisonData.filter(item => item['匹配状态'] === '已匹配').length;
+    const unmatchedCount = comparisonData.filter(item => item['匹配状态'] === '未匹配').length;
     
-    console.log('\n🎉 双对照表生成完成！');
-    console.log(`📁 蓝色系统对照表: ${blueSystemFilePath}`);
-    console.log(`📁 红色系统对照表: ${redSystemFilePath}`);
+    console.log('\n🎉 对照表生成完成！');
+    console.log(`📁 对照表文件: ${filePath}`);
     console.log(`\n📊 统计信息:`);
-    console.log(`   蓝色系统对照表:`);
-    console.log(`     总计: ${blueSystemComparisonData.length} 条`);
-    console.log(`     已匹配: ${blueMatchedCount} 条`);
-    console.log(`     未匹配: ${blueUnmatchedCount} 条`);
-    console.log(`   红色系统对照表:`);
-    console.log(`     总计: ${redSystemComparisonData.length} 条`);
-    console.log(`     已匹配: ${redMatchedCount} 条`);
-    console.log(`     未匹配: ${redUnmatchedCount} 条`);
+    console.log(`   总计: ${comparisonData.length} 条`);
+    console.log(`   已匹配: ${matchedCount} 条`);
+    console.log(`   未匹配: ${unmatchedCount} 条`);
     
-    return { blueSystemFilePath, redSystemFilePath };
+    return { filePath };
     
   } catch (error) {
     console.error('❌ 资产对照表生成失败:', error.message);

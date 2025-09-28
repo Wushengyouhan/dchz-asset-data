@@ -5,8 +5,8 @@ const config = require('./config');
  * 蓝色系统层级资产导出主程序
  */
 async function exportHierarchicalAssets() {
-  // 强制使用蓝色系统数据库
-  const exporter = new HierarchicalAssetExporter(config, 'assets');
+  // 使用红色系统数据库查询蓝色系统数据
+  const exporter = new HierarchicalAssetExporter(config, 'redSystem');
   
   try {
     const managementAreaName = config.managementArea.name;

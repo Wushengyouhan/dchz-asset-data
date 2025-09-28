@@ -18,28 +18,43 @@ class HierarchicalAssetExporter {
   async getLevel1Assets() {
     const managementAreaName = this.config.managementArea.name;
     const query = `
-      SELECT
-        AS_CODE AS 资产编码,
-        AS_NAME AS 资产名称,
-        AS_LV AS 资产等级,
-        OPERATING AS 资产类型,
-        AS_TYPE_NAME AS 资产分类,
-        AS_ADDRESS AS 资产地址,
-        COALESCE(AS_CONSTRUCTION_AREA, 0) AS 建筑面积,
-        COALESCE(AS_USABLE_AREA, 0) AS 租赁面积,
-        UP_AS_CODE AS 上级资产编码,
-        AS_STATE,
-        U_DELETE 
+      SELECT DISTINCT
+        a.AS_CODE AS 资产编码,
+        a.AS_NAME AS 资产名称,
+        a.AS_LV AS 资产等级,
+        a.OPERATING AS 资产类型,
+        a.AS_TYPE_NAME AS 资产分类,
+        a.AS_ADDRESS AS 资产地址,
+        COALESCE(a.AS_CONSTRUCTION_AREA, 0) AS 建筑面积,
+        COALESCE(a.AS_USABLE_AREA, 0) AS 租赁面积,
+        a.UP_AS_CODE AS 上级资产编码,
+        a.AS_STATE,
+        a.U_DELETE,
+        a.NEW_AS_CODE,
+        a.NEW_AS_NAME,
+        a.OLD_AS_CODE,
+        a.OLD_AS_NAME,
+        c.CON_CODE AS 合同编号
       FROM
-        as_asset 
+        as_asset a
+      LEFT JOIN (
+        SELECT
+          ccd.AS_CODE,
+          c.CON_CODE
+        FROM con_contracts_detail ccd
+        INNER JOIN con_contracts c ON ccd.CONTRACTS_ID = c.ID
+        WHERE c.U_DELETE = 1
+          AND c.START_DATE < NOW()
+          AND c.END_DATE > NOW()
+          AND c.CON_STATE IN ('CHECKED', 'INIT', 'WORKFLOWED')
+      ) c ON a.AS_CODE = c.AS_CODE
       WHERE
-        OPERATING_NAME = ? 
-        AND U_DELETE = 1 
-        AND CLASS_TYPE IN ('building', 'structure') 
-        AND AS_STATE = 'CHECKED' 
-        AND AS_LV = 1 
+        a.OPERATING_NAME = ? 
+        AND a.U_DELETE = 1 
+        AND a.AS_STATE LIKE '%BLUE' 
+        AND a.AS_LV = 1 
       ORDER BY
-        AS_CODE
+        a.AS_CODE
     `;
 
     return await this.dbManager.query(query, [managementAreaName]);
@@ -53,28 +68,43 @@ class HierarchicalAssetExporter {
   async getChildAssets(parentCode) {
     const managementAreaName = this.config.managementArea.name;
     const query = `
-      SELECT
-        AS_CODE AS 资产编码,
-        AS_NAME AS 资产名称,
-        AS_LV AS 资产等级,
-        OPERATING AS 资产类型,
-        AS_TYPE_NAME AS 资产分类,
-        AS_ADDRESS AS 资产地址,
-        COALESCE(AS_CONSTRUCTION_AREA, 0) AS 建筑面积,
-        COALESCE(AS_USABLE_AREA, 0) AS 租赁面积,
-        UP_AS_CODE AS 上级资产编码,
-        AS_STATE,
-        U_DELETE 
+      SELECT DISTINCT
+        a.AS_CODE AS 资产编码,
+        a.AS_NAME AS 资产名称,
+        a.AS_LV AS 资产等级,
+        a.OPERATING AS 资产类型,
+        a.AS_TYPE_NAME AS 资产分类,
+        a.AS_ADDRESS AS 资产地址,
+        COALESCE(a.AS_CONSTRUCTION_AREA, 0) AS 建筑面积,
+        COALESCE(a.AS_USABLE_AREA, 0) AS 租赁面积,
+        a.UP_AS_CODE AS 上级资产编码,
+        a.AS_STATE,
+        a.U_DELETE,
+        a.NEW_AS_CODE,
+        a.NEW_AS_NAME,
+        a.OLD_AS_CODE,
+        a.OLD_AS_NAME,
+        c.CON_CODE AS 合同编号
       FROM
-        as_asset 
+        as_asset a
+      LEFT JOIN (
+        SELECT
+          ccd.AS_CODE,
+          c.CON_CODE
+        FROM con_contracts_detail ccd
+        INNER JOIN con_contracts c ON ccd.CONTRACTS_ID = c.ID
+        WHERE c.U_DELETE = 1
+          AND c.START_DATE < NOW()
+          AND c.END_DATE > NOW()
+          AND c.CON_STATE IN ('CHECKED', 'INIT', 'WORKFLOWED')
+      ) c ON a.AS_CODE = c.AS_CODE
       WHERE
-        OPERATING_NAME = ? 
-        AND U_DELETE = 1 
-        AND CLASS_TYPE IN ('building', 'structure') 
-        AND AS_STATE = 'CHECKED' 
-        AND UP_AS_CODE = ?
+        a.OPERATING_NAME = ? 
+        AND a.U_DELETE = 1 
+        AND a.AS_STATE LIKE '%BLUE' 
+        AND a.UP_AS_CODE = ?
       ORDER BY
-        AS_CODE
+        a.AS_CODE
     `;
 
     return await this.dbManager.query(query, [managementAreaName, parentCode]);
