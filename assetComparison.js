@@ -86,25 +86,39 @@ async function generateAssetComparison() {
     const blueAssets = generator.readExcelFile(blueFile.path);
     const redAssets = generator.readExcelFile(redFile.path);
     
-    // 生成对照表数据
-    const comparisonData = generator.generateComparisonData(blueAssets, redAssets);
+    // 生成两个对照表数据
+    console.log('📊 正在生成对照表数据...');
+    const blueSystemComparisonData = generator.generateBlueSystemComparisonData(blueAssets, redAssets);
+    const redSystemComparisonData = generator.generateRedSystemComparisonData(blueAssets, redAssets);
     
-    // 生成对照表Excel文件
-    console.log('📊 正在生成对照表Excel文件...');
-    const filePath = generator.generateComparisonExcel(comparisonData);
+    // 生成蓝色系统对照表Excel文件
+    console.log('📊 正在生成蓝色系统对照表Excel文件...');
+    const blueSystemFilePath = generator.generateComparisonExcel(blueSystemComparisonData, '蓝色系统对照表');
+    
+    // 生成红色系统对照表Excel文件
+    console.log('📊 正在生成红色系统对照表Excel文件...');
+    const redSystemFilePath = generator.generateComparisonExcel(redSystemComparisonData, '红色系统对照表');
     
     // 显示统计信息
-    const matchedCount = comparisonData.filter(item => item['匹配状态'] === '已匹配').length;
-    const unmatchedCount = comparisonData.filter(item => item['匹配状态'] === '未匹配').length;
+    const blueMatchedCount = blueSystemComparisonData.filter(item => item['匹配状态'] === '已匹配').length;
+    const blueUnmatchedCount = blueSystemComparisonData.filter(item => item['匹配状态'] === '未匹配').length;
+    const redMatchedCount = redSystemComparisonData.filter(item => item['匹配状态'] === '已匹配').length;
+    const redUnmatchedCount = redSystemComparisonData.filter(item => item['匹配状态'] === '未匹配').length;
     
-    console.log('\n🎉 资产对照表生成完成！');
-    console.log(`📁 文件位置: ${filePath}`);
-    console.log(`📊 统计信息:`);
-    console.log(`   已匹配: ${matchedCount} 条`);
-    console.log(`   未匹配: ${unmatchedCount} 条`);
-    console.log(`   总计: ${comparisonData.length} 条`);
+    console.log('\n🎉 双对照表生成完成！');
+    console.log(`📁 蓝色系统对照表: ${blueSystemFilePath}`);
+    console.log(`📁 红色系统对照表: ${redSystemFilePath}`);
+    console.log(`\n📊 统计信息:`);
+    console.log(`   蓝色系统对照表:`);
+    console.log(`     总计: ${blueSystemComparisonData.length} 条`);
+    console.log(`     已匹配: ${blueMatchedCount} 条`);
+    console.log(`     未匹配: ${blueUnmatchedCount} 条`);
+    console.log(`   红色系统对照表:`);
+    console.log(`     总计: ${redSystemComparisonData.length} 条`);
+    console.log(`     已匹配: ${redMatchedCount} 条`);
+    console.log(`     未匹配: ${redUnmatchedCount} 条`);
     
-    return filePath;
+    return { blueSystemFilePath, redSystemFilePath };
     
   } catch (error) {
     console.error('❌ 资产对照表生成失败:', error.message);

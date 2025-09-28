@@ -8,6 +8,7 @@
     "blue-system": "node hierarchicalExport.js",
     "red-system": "node redSystemExport.js",
     "comparison": "node assetComparison.js",
+    "all": "npm run blue-system && npm run red-system && npm run comparison",
     "dev": "node --watch index.js"
   },
   "keywords": ["mysql", "excel", "export", "database"],
