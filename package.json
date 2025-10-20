@@ -8,6 +8,8 @@
     "blue-all": "node hierarchicalExport.js",
     "red-all": "node redSystemExport.js",
     "comparison": "node assetComparison.js",
+    "contract": "node contractProcessor.js",
+    "import-codes": "node importAssetCodes.js",
     "all": "npm run blue-all && npm run red-all && npm run comparison",
     "dev": "node --watch index.js"
   },
